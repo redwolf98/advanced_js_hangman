@@ -1,0 +1,22 @@
+{
+  "name": "advanced_js_hangman",
+  "version": "1.0.0",
+  "description": "Recreate Hangman via NodeJS",
+  "main": "hangman.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/redwolf98/advanced_js_hangman.git"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/redwolf98/advanced_js_hangman/issues"
+  },
+  "homepage": "https://github.com/redwolf98/advanced_js_hangman#readme",
+  "dependencies": {
+    "inquirer": "^3.3.0"
+  }
+}
