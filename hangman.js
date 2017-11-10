@@ -6,7 +6,7 @@ var wins = 0;
 var losses = 0;
 var guesses = 10;
 var listOfWords = [];
-var DEBUG = true;
+var DEBUG = false;
 var currentWord;
 
 var messageToChooseLetter = {
@@ -61,6 +61,17 @@ Word.prototype.printHiddenWord = function(){
     return printVersion;
 }
 
+Word.prototype.updateHiddenWord = function(inputLetter){
+    for(var c = 0; c<this.hiddenWord.length;c++){
+        log("Letter: " + this.hiddenWord[c].actualLetter + ", isALetter: " + this.hiddenWord[c].isALetter);
+        if(this.hiddenWord[c].isALetter && this.hiddenWord[c].actualLetter.toLowerCase() == inputLetter){
+            log("Letter Updated.");
+            this.hiddenWord[c].hasBeenGuessed = true;
+        }
+    }
+}
+
+
 function isALetter(input){
     return input.length === 1 && input.match(/[a-z]/i);
 }
@@ -76,6 +87,8 @@ function toTitleCase(str)
 /////
 //Begin game process
 /////////
+
+StartGame();
 
 
 
@@ -113,8 +126,6 @@ function buildWords(){
 
 }
 
-StartGame();
-
 
 function StartGame(){
 
@@ -125,6 +136,7 @@ function StartGame(){
 
 function RestartGame(){
     guesses = 10;
+    lettersAlreadyGuessed = [];
     // log(chooseRandomWord());
     currentWord = chooseRandomWord();
     // log(currentWord.printHiddenWord());
@@ -146,6 +158,7 @@ function promptUserForLetter(){
     console.log();
     console.log("Guesses Left: " + guesses);
     console.log("Current Word: " +  currentWord.printHiddenWord());
+    log(currentWord.answer);
     console.log();
 
     inquirer.prompt(messageToChooseLetter).then(function(response)
@@ -168,11 +181,36 @@ function promptUserForLetter(){
                     console.log("You have already guessed '" + response.userInput + "'.");
                     promptUserForLetter();
                 }else{
-                    if(currentWord.hiddenWord.some(x => x.actualLetter == userInput)){
+                    lettersAlreadyGuessed.push(userInput);
+                    if(currentWord.hiddenWord.some(x => x.actualLetter.toLowerCase() == userInput)){
+                        console.log("Correct!");
+                        currentWord.updateHiddenWord(userInput);                        
+
+                        if(currentWord.stillHasMissingLetters()){
+                            promptUserForLetter();
+                        }else{
+                            wins++;
+                            console.log("Congrats! You've found all letters.")
+                            console.log("The word was " + currentWord.printHiddenWord());
+                            console.log("Current Score - Wins: " + wins + ", Losses: " + losses);
+                            promptUserToPlayAgain();
+                        }
 
                     }else{
-                        console.log("Sorry! '" + response.userInput + "' is NOT in the word!");
+                        console.log("Sorry! '" + response.userInput + "' is NOT in the word!");                        
                         guesses--;
+                        if(guesses > 0){
+                            promptUserForLetter();
+                        }else{
+                            losses++;
+                            console.log();
+                            console.log("Oops - you're out of guesses...");
+                            currentWord.hiddenWord.map(z => z.hasBeenGuessed = true);
+                            console.log("The word was: " + currentWord.printHiddenWord());
+                            console.log("Current Score - Wins: " + wins + ", Losses: " + losses);
+                            console.log();
+                            promptUserToPlayAgain();
+                        }
                     }
                 }
             }
@@ -182,6 +220,20 @@ function promptUserForLetter(){
 
 }
 
-function promptUserToPlayAgain(){
 
+
+function promptUserToPlayAgain(){
+    var prompt = {
+        type:"confirm",
+        message:"Play Again?",
+        name: "output"
+    };
+
+    inquirer.prompt([prompt]).then(function(userReponse){
+        if(userReponse.output){
+            RestartGame();
+        }else{
+            console.log("Thanks for playing!");
+        }
+    });
 }
